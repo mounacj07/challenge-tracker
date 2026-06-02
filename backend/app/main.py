@@ -35,3 +35,10 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
             "email": new_user.email
         }
     }
+
+@app.get("/users")
+def get_users(db: Session = Depends(get_db)):
+
+    users = db.query(User).all()
+
+    return users
