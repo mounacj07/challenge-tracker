@@ -8,6 +8,9 @@ from app.schemas.user import UserCreate
 from app.models.challenge import Challenge
 from app.schemas.challenge import ChallengeCreate
 
+from app.models.challenge_member import ChallengeMember
+from app.schemas.challenge_member import JoinChallenge
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -63,3 +66,26 @@ def create_challenge(
     db.refresh(new_challenge)
 
     return new_challenge
+
+@app.get("/challenges")
+def get_challenges(db: Session = Depends(get_db)):
+
+    challenges = db.query(Challenge).all()
+
+    return challenges
+
+@app.post("/join")
+def join_challenge(
+    data: JoinChallenge,
+    db: Session = Depends(get_db)
+):
+
+    membership = ChallengeMember(
+        user_id=data.user_id,
+        challenge_id=data.challenge_id
+    )
+
+    db.add(membership)
+    db.commit()
+
+    return {"message": "Joined challenge"}
