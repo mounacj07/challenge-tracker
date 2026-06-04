@@ -13,7 +13,7 @@ from app.schemas.challenge_member import JoinChallenge
 
 from app.models.checkin import CheckIn
 from app.schemas.checkin import CheckInCreate
-from datetime import date
+from datetime import date, timedelta
 
 Base.metadata.create_all(bind=engine)
 
@@ -99,6 +99,20 @@ def create_checkin(
     checkin: CheckInCreate,
     db: Session = Depends(get_db)
 ):
+    existing_checkin = (
+    db.query(CheckIn)
+    .filter(
+        CheckIn.user_id == checkin.user_id,
+        CheckIn.challenge_id == checkin.challenge_id,
+        CheckIn.date == date.today()
+    )
+    .first()
+)
+
+    if existing_checkin:
+        return {
+            "message": "Already checked in today"
+        }
 
     new_checkin = CheckIn(
         user_id=checkin.user_id,
@@ -121,3 +135,40 @@ def get_checkins(db: Session = Depends(get_db)):
     checkins = db.query(CheckIn).all()
 
     return checkins
+
+@app.get("/streak/{user_id}/{challenge_id}")
+def get_streak(
+    user_id: int,
+    challenge_id: int,
+    db: Session = Depends(get_db)
+):
+    
+    checkins = (
+        db.query(CheckIn)
+        .filter(
+            CheckIn.user_id == user_id,
+            CheckIn.challenge_id == challenge_id
+        )
+        .order_by(CheckIn.date.desc())
+        .all()
+    )
+
+    if not checkins:
+        return {"streak": 0}
+
+    streak = 0
+    expected_date = date.today()
+
+    for checkin in checkins:
+
+        if checkin.date == expected_date:
+            streak += 1
+            expected_date -= timedelta(days=1)
+
+        elif checkin.date > expected_date:
+            continue
+
+        else:
+            break
+
+    return {"streak": streak}
