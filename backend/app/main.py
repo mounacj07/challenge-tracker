@@ -11,6 +11,10 @@ from app.schemas.challenge import ChallengeCreate
 from app.models.challenge_member import ChallengeMember
 from app.schemas.challenge_member import JoinChallenge
 
+from app.models.checkin import CheckIn
+from app.schemas.checkin import CheckInCreate
+from datetime import date
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -89,3 +93,31 @@ def join_challenge(
     db.commit()
 
     return {"message": "Joined challenge"}
+
+@app.post("/checkin")
+def create_checkin(
+    checkin: CheckInCreate,
+    db: Session = Depends(get_db)
+):
+
+    new_checkin = CheckIn(
+        user_id=checkin.user_id,
+        challenge_id=checkin.challenge_id,
+        date=date.today()
+    )
+
+    db.add(new_checkin)
+    db.commit()
+    db.refresh(new_checkin)
+
+    return {
+        "message": "Check-in successful",
+        "date": new_checkin.date
+    }
+
+@app.get("/checkins")
+def get_checkins(db: Session = Depends(get_db)):
+
+    checkins = db.query(CheckIn).all()
+
+    return checkins
