@@ -121,6 +121,15 @@ def create_checkin(
     )
 
     db.add(new_checkin)
+
+    user = (
+    db.query(User)
+    .filter(User.id == checkin.user_id)
+    .first()
+    )
+
+    user.xp += 10
+
     db.commit()
     db.refresh(new_checkin)
 
@@ -172,3 +181,32 @@ def get_streak(
             break
 
     return {"streak": streak}
+
+@app.get("/xp/{user_id}")
+def get_xp(user_id: int, db: Session = Depends(get_db)):
+
+    user = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+
+    return {
+        "xp": user.xp
+    }
+
+@app.get("/level/{user_id}")
+def get_level(user_id: int, db: Session = Depends(get_db)):
+
+    user = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+
+    level = user.xp // 100 + 1
+
+    return {
+        "xp": user.xp,
+        "level": level
+    }
