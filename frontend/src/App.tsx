@@ -6,10 +6,24 @@ function App() {
   const [xp, setXp] = useState(0)
   const [level, setLevel] = useState(0)
   const [streak, setStreak] = useState(0)
+  const [challenges, setChallenges] = useState([])
 
-  useEffect(() => {
+  const checkIn = () => {
 
     axios
+      .post("http://127.0.0.1:8000/checkin", {
+        user_id: 1,
+        challenge_id: 1
+      })
+      .then((response) => {
+        alert(response.data.message)
+        fetchDashboard()
+      })
+
+  }
+
+  const fetchDashboard = () => {
+        axios
       .get("http://127.0.0.1:8000/xp/1")
       .then((response) => {
         console.log(response.data)
@@ -28,7 +42,18 @@ function App() {
         setStreak(response.data.streak)
       })
 
+    axios
+      .get("http://127.0.0.1:8000/challenges")
+      .then((response)=> {
+        console.log(response.data)
+        setChallenges(response.data)
+      })
+  }
+
+  useEffect(() => {
+    fetchDashboard()
   }, [])
+
 
   return (
     <div>
@@ -36,6 +61,20 @@ function App() {
       <p>XP: {xp}</p>
       <p>Level: {level}</p>
       <p>Streak: {streak}</p>
+
+      <h2>Challenges</h2>
+      <ul>
+        {challenges.map((challenge:any)=> (
+          <li key={challenge.id}>
+            {challenge.title}
+          </li>
+        ))}
+      </ul>
+
+      <button onClick={checkIn}>
+      Check In Today
+      </button>
+
     </div>
   )
 }
