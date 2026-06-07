@@ -54,6 +54,19 @@ function App() {
     fetchDashboard()
   }, [])
 
+  const joinChallenge = () => {
+
+    axios
+      .post("http://127.0.0.1:8000/join", {
+        user_id:1,
+        challenge_id:1
+      })
+      .then((response)=>{
+        console.log(response.data)
+        alert(response.data.message)
+      })
+  }
+
 
   return (
     <div>
@@ -73,6 +86,20 @@ function App() {
 
       <button onClick={checkIn}>
       Check In Today
+      </button>
+
+      <h2>Join Challenges</h2>
+      <ul>
+        {challenges.map((challenge:any)=>(
+          <li key={challenge.id}>
+            {challenge.title}<br></br>
+            Duration: {challenge.duration_days}
+          </li>
+        ))}
+      </ul>
+
+      <button onClick={joinChallenge}>
+        Join
       </button>
 
     </div>
