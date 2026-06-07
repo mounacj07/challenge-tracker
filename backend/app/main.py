@@ -219,3 +219,19 @@ def get_level(user_id: int, db: Session = Depends(get_db)):
         "xp": user.xp,
         "level": level
     }
+
+@app.get("/badges/{user_id}")
+def get_badges(user_id:int, db:Session=Depends(get_db)):
+    user=db.query(User).filter(User.id==user_id).first()
+    badges=[]
+
+    if user.xp>=10:
+        badges.append("Beginner")
+
+    if user.xp>=100:
+        badges.append("Dedicated")
+
+    if user.xp>=500:
+        badges.append("Legend")
+
+    return badges
