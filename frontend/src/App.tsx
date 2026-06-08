@@ -7,6 +7,7 @@ function App() {
   const [level, setLevel] = useState(0)
   const [streak, setStreak] = useState(0)
   const [challenges, setChallenges] = useState([])
+  const [badges, setBadges] = useState<string[]>([])
 
   const checkIn = () => {
 
@@ -47,6 +48,12 @@ function App() {
       .then((response)=> {
         console.log(response.data)
         setChallenges(response.data)
+      })
+
+    axios
+      .get("http://127.0.0.1:8000/badges/1")
+      .then((response) => {
+        setBadges(response.data)
       })
   }
 
@@ -101,6 +108,14 @@ function App() {
       <button onClick={joinChallenge}>
         Join
       </button>
+
+      <h2>Badges</h2>
+
+      <ul>
+        {badges.map((badge) => (
+          <li key={badge}>{badge}</li>
+        ))}
+      </ul>
 
     </div>
   )
