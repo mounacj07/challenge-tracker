@@ -235,3 +235,40 @@ def get_badges(user_id:int, db:Session=Depends(get_db)):
         badges.append("Legend")
 
     return badges
+
+@app.get("/hello")
+def hello():
+    return {"message": "ChallengeQuest is back!"}
+
+@app.get("/progress/{user_id}/{challenge_id}")
+def get_progress(
+    user_id: int,
+    challenge_id: int,
+    db: Session = Depends(get_db)
+):
+    challenge = (
+    db.query(Challenge)
+    .filter(Challenge.id == challenge_id)
+    .first()
+    )
+
+    if not challenge:
+        return {"message": "Challenge not found"}
+
+    checkins = (
+    db.query(CheckIn)
+    .filter(
+        CheckIn.user_id == user_id,
+        CheckIn.challenge_id == challenge_id
+    )
+    .all()
+)
+
+    completed_days = len(checkins)
+    progress = round((completed_days / challenge.duration_days) * 100, 2)
+
+    return {
+    "completed_days": completed_days,
+    "total_days": challenge.duration_days,
+    "progress": progress
+}
