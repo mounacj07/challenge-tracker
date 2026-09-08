@@ -90,6 +90,27 @@ function App() {
       <p>Streak: {streak}</p>
       <p>Progress: {progress}%</p>
 
+      <p>Challenge Progress</p>
+
+    <div
+      style={{
+        width: "300px",
+        height: "20px",
+        backgroundColor: "#e5e7eb",
+        borderRadius: "10px",
+        overflow: "hidden"
+      }}
+    >
+      <div
+        style={{
+          width: `${progress}%`,
+          height: "100%",
+          backgroundColor: "#22c55e",
+          borderRadius: "10px"
+        }}
+      />
+    </div>
+
       <h2>Challenges</h2>
       <ul>
         {challenges.map((challenge:any)=> (
