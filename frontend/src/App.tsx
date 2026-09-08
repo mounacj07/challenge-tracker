@@ -8,6 +8,7 @@ function App() {
   const [streak, setStreak] = useState(0)
   const [challenges, setChallenges] = useState([])
   const [badges, setBadges] = useState<string[]>([])
+  const [progress, setProgress] = useState(0)
 
   const checkIn = () => {
 
@@ -55,6 +56,12 @@ function App() {
       .then((response) => {
         setBadges(response.data)
       })
+
+    axios
+      .get("http://127.0.0.1:8000/progress/1/1")
+      .then((response) => {
+        setProgress(response.data.progress)
+      })
   }
 
   useEffect(() => {
@@ -81,6 +88,7 @@ function App() {
       <p>XP: {xp}</p>
       <p>Level: {level}</p>
       <p>Streak: {streak}</p>
+      <p>Progress: {progress}%</p>
 
       <h2>Challenges</h2>
       <ul>
