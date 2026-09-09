@@ -103,6 +103,26 @@ def join_challenge(
 
     return {"message": "Joined challenge"}
 
+@app.get("/joined/{user_id}/{challenge_id}")
+def check_joined(
+    user_id:int,
+    challenge_id:int,
+    db: Session= Depends(get_db)
+):
+    membership=(
+        db.query(ChallengeMember)
+        .filter(
+            ChallengeMember.user_id==user_id,
+            ChallengeMember.challenge_id==challenge_id
+        )
+        .first()
+    )
+
+    if membership:
+        return{"joined": True}
+
+    return{"joined":False}
+
 @app.post("/checkin")
 def create_checkin(
     checkin: CheckInCreate,
@@ -153,6 +173,27 @@ def get_checkins(db: Session = Depends(get_db)):
     checkins = db.query(CheckIn).all()
 
     return checkins
+
+@app.get("/checked-in/{user_id}/{challenge_id}")
+def check_checked_in(
+    user_id: int,
+    challenge_id: int,
+    db:Session = Depends(get_db)
+):
+    checkin = (
+        db.query(CheckIn)
+        .filter(
+            CheckIn.user_id==user_id,
+            CheckIn.challenge_id==challenge_id,
+            CheckIn.date==date.today()
+        )
+        .first()
+    )
+
+    if checkin:
+        return{"checked_in":True}
+
+    return{"checked_in":False}
 
 @app.get("/streak/{user_id}/{challenge_id}")
 def get_streak(

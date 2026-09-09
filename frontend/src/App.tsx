@@ -6,9 +6,12 @@ function App() {
   const [xp, setXp] = useState(0)
   const [level, setLevel] = useState(0)
   const [streak, setStreak] = useState(0)
-  const [challenges, setChallenges] = useState([])
+  const [challenges, setChallenges] = useState<any[]>([])
   const [badges, setBadges] = useState<string[]>([])
   const [progress, setProgress] = useState(0)
+  const [joined, setJoined] = useState(false)
+  const [completedDays, setCompletedDays] = useState(0)
+  const [checkedIn, setCheckedIn] = useState(false)
 
   const checkIn = () => {
 
@@ -61,6 +64,20 @@ function App() {
       .get("http://127.0.0.1:8000/progress/1/1")
       .then((response) => {
         setProgress(response.data.progress)
+        setCompletedDays(response.data.completed_days)
+      })
+
+    axios
+      .get("http://127.0.0.1:8000/joined/1/1")
+      .then((response)=>{
+        setJoined(response.data.joined)
+      })
+
+    axios 
+      .get("http://127.0.0.1:8000/checked-in/1/1")
+      .then((response)=>{
+        console.log("CHECKED IN:", response.data)
+        setCheckedIn(response.data.checked_in)
       })
   }
 
@@ -68,16 +85,17 @@ function App() {
     fetchDashboard()
   }, [])
 
-  const joinChallenge = () => {
+  const joinChallenge = (challengeId: number) => {
 
     axios
       .post("http://127.0.0.1:8000/join", {
         user_id:1,
-        challenge_id:1
+        challenge_id:challengeId
       })
       .then((response)=>{
         console.log(response.data)
         alert(response.data.message)
+        setJoined(true)
       })
   }
 
@@ -88,7 +106,7 @@ function App() {
       <p>XP: {xp}</p>
       <p>Level: {level}</p>
       <p>Streak: {streak}</p>
-      <p>Progress: {progress}%</p>
+      <p>Progress: {completedDays} / {challenges[0]?.duration_days} days completed</p>
 
       <p>Challenge Progress</p>
 
@@ -115,13 +133,21 @@ function App() {
       <ul>
         {challenges.map((challenge:any)=> (
           <li key={challenge.id}>
-            {challenge.title}
+            <h3>{challenge.title}</h3>
+            <p>{challenge.description}</p>
+            <p>Duration: {challenge.duration_days} days</p>
+            <p>
+              Progress:{completedDays} / {challenge.duration_days} days
+            </p>
           </li>
         ))}
       </ul>
 
-      <button onClick={checkIn}>
-      Check In Today
+      <button 
+        onClick={checkIn}
+        disabled={checkedIn}
+      >
+        {checkedIn? "Checked In": "Check In Today"}
       </button>
 
       <h2>Join Challenges</h2>
@@ -129,14 +155,15 @@ function App() {
         {challenges.map((challenge:any)=>(
           <li key={challenge.id}>
             {challenge.title}<br></br>
-            Duration: {challenge.duration_days}
+            Duration: {challenge.duration_days}<br></br>
+
+            <button onClick={()=>joinChallenge(challenge.id)}
+                    disabled={joined}>
+              {joined? "Joined" :"Join"}
+            </button>
           </li>
         ))}
       </ul>
-
-      <button onClick={joinChallenge}>
-        Join
-      </button>
 
       <h2>Badges</h2>
 
