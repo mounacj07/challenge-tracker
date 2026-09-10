@@ -12,6 +12,7 @@ function App() {
   const [joined, setJoined] = useState(false)
   const [completedDays, setCompletedDays] = useState(0)
   const [checkedIn, setCheckedIn] = useState(false)
+  const [checkIns, setCheckIns]=useState<any[]>([])
 
   const checkIn = () => {
 
@@ -78,6 +79,21 @@ function App() {
       .then((response)=>{
         console.log("CHECKED IN:", response.data)
         setCheckedIn(response.data.checked_in)
+      })
+
+    axios
+      .get("http://127.0.0.1:8000/checkins")
+      .then((response)=>{
+        const sortedCheckins =response.data.sort(
+          (a:any, b:any)=>
+            new Date(b.date).getTime()-new Date(a.date).getTime()
+        )
+
+        const filteredCheckins= sortedCheckins.filter(
+          (checkin:any)=>checkin.challenge_id===1
+        )
+
+        setCheckIns(filteredCheckins)
       })
   }
 
@@ -149,6 +165,23 @@ function App() {
       >
         {checkedIn? "Checked In": "Check In Today"}
       </button>
+
+      <h2>Check-in History</h2>
+      <p>Total check-ins: {checkIns.length}</p>
+
+      {checkIns.length===0 ? (
+        <p>No check-ins yet. Start today!</p>
+      ):(
+        <ul>
+          {checkIns.map((checkin)=>(
+            <li key={checkin.id}>
+              {new Date(checkin.date).toDateString()}
+              {checkin.date=== new Date().toISOString().split("T")[0]&&"-Today ✓"}
+            </li>
+          ))}
+        </ul>
+      )
+      }
 
       <h2>Join Challenges</h2>
       <ul>
