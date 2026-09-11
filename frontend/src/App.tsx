@@ -131,7 +131,7 @@ function App() {
       <p>Streak: {streak}</p>
       <p>Progress: {completedDays} / {challenges[0]?.duration_days} days completed</p>
       {completed ? (
-        <p>Challenge Completed!</p>
+        <p>Challenge Completed! {completedDays} / {challenges[0]?.duration_days} days</p>
       ):(
         <p>Challenge in progress. Keep Going!</p>
       )}
@@ -148,7 +148,7 @@ function App() {
     >
       <div
         style={{
-          width: `${progress}%`,
+          width: `${Math.min(progress,100)}%`,
           height: "100%",
           backgroundColor: "#22c55e",
           borderRadius: "10px"
