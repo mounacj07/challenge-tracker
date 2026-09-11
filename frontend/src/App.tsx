@@ -13,6 +13,7 @@ function App() {
   const [completedDays, setCompletedDays] = useState(0)
   const [checkedIn, setCheckedIn] = useState(false)
   const [checkIns, setCheckIns]=useState<any[]>([])
+  const [completed, setCompleted]=useState(false)
 
   const checkIn = () => {
 
@@ -95,6 +96,12 @@ function App() {
 
         setCheckIns(filteredCheckins)
       })
+
+      axios
+        .get("http://127.0.0.1:8000/completed/1/1")
+        .then((response)=>{
+          setCompleted(response.data.completed)
+        })
   }
 
   useEffect(() => {
@@ -123,7 +130,11 @@ function App() {
       <p>Level: {level}</p>
       <p>Streak: {streak}</p>
       <p>Progress: {completedDays} / {challenges[0]?.duration_days} days completed</p>
-
+      {completed ? (
+        <p>Challenge Completed!</p>
+      ):(
+        <p>Challenge in progress. Keep Going!</p>
+      )}
       <p>Challenge Progress</p>
 
     <div
@@ -163,7 +174,11 @@ function App() {
         onClick={checkIn}
         disabled={checkedIn}
       >
-        {checkedIn? "Checked In": "Check In Today"}
+        {completed
+          ? "Challenge Completed"
+          :checkedIn
+            ? "Checked In"
+            : "Check in today"}
       </button>
 
       <h2>Check-in History</h2>

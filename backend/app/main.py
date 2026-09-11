@@ -313,3 +313,32 @@ def get_progress(
     "total_days": challenge.duration_days,
     "progress": progress
 }
+
+@app.get("/completed/{user_id}/{challenge_id}")
+def check_completed(
+    user_id:int,
+    challenge_id:int,
+    db: Session = Depends(get_db)
+):
+    challenge = (
+        db.query(Challenge)
+        .filter(Challenge.id == challenge_id)
+        .first()
+    )
+
+    if not challenge:
+        return {"completed": False}
+
+    checkins = (
+        db.query(CheckIn)
+        .filter(
+            CheckIn.user_id ==user_id,
+            CheckIn.challenge_id == challenge_id
+        )
+        .count()
+    )
+
+    if checkins>=challenge.duration_days:
+        return {"completed": True}
+
+    return {"completed": False}
