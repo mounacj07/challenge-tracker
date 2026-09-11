@@ -15,6 +15,8 @@ from app.models.checkin import CheckIn
 from app.schemas.checkin import CheckInCreate
 from datetime import date, timedelta
 
+from app.models.challenge_run import ChallengeRun
+
 from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
@@ -342,3 +344,24 @@ def check_completed(
         return {"completed": True}
 
     return {"completed": False}
+
+@app.post("/start-run")
+def start_run(
+    user_id: int,
+    challenge_id: int,
+    db: Session = Depends(get_db)
+):
+    new_run = ChallengeRun(
+        user_id=user_id,
+        challenge_id=challenge_id
+    )
+
+    db.add(new_run)
+    db.commit()
+    db.refresh(new_run)
+
+    return{
+        "message": "Challenge run started",
+        "run_id":new_run.id,
+        "started_at":new_run.started_at
+    }
