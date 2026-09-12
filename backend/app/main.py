@@ -145,9 +145,24 @@ def create_checkin(
             "message": "Already checked in today"
         }
 
+    current_run = (
+        db.query(ChallengeRun)
+        .filter(
+            ChallengeRun.user_id == checkin.user_id,
+            ChallengeRun.challenge_id == checkin.challenge_id,
+            ChallengeRun.completed_at == None
+        )
+        .order_by(ChallengeRun.started_at.desc())
+        .first()
+    )
+
+    if not current_run:
+        return{"message":"No active challenge run"}
+
     new_checkin = CheckIn(
         user_id=checkin.user_id,
         challenge_id=checkin.challenge_id,
+        run_id=current_run.id,
         date=date.today()
     )
 
@@ -364,4 +379,30 @@ def start_run(
         "message": "Challenge run started",
         "run_id":new_run.id,
         "started_at":new_run.started_at
+    }
+
+@app.get("/current-run/{user_id}/{challenge_id}")
+def get_current_run(
+    user_id: int,
+    challenge_id:int,
+    db: Session = Depends(get_db)
+):
+    run = (
+        db.query(ChallengeRun)
+        .filter(
+            ChallengeRun.user_id == user_id,
+            ChallengeRun.challenge_id==challenge_id,
+            ChallengeRun.completed_at == None
+        )
+        .order_by(ChallengeRun.started_at.desc())
+        .first()
+    )
+
+    if not run:
+        return{"run": None}
+
+    return{
+        "run_id":run.id,
+        "started_at": run.started_at,
+        "completed_at": run.completed_at
     }
