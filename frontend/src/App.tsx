@@ -185,7 +185,7 @@ function App() {
       <p>Total check-ins: {checkIns.length}</p>
 
       {checkIns.length===0 ? (
-        <p>No check-ins yet. Start today!</p>
+        <p>No check-ins yet. Start your challenge today!</p>
       ):(
         <ul>
           {checkIns.map((checkin)=>(
