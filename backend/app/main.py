@@ -313,30 +313,67 @@ def get_progress(
     if not challenge:
         return {"message": "Challenge not found"}
 
-    checkins = (
-    db.query(CheckIn)
-    .filter(
-        CheckIn.user_id == user_id,
-        CheckIn.challenge_id == challenge_id
+    current_run = (
+        db.query(ChallengeRun)
+        .filter(
+            ChallengeRun.user_id == user_id,
+            ChallengeRun.challenge_id == challenge_id,
+            ChallengeRun.completed_at == None
+        )
+        .order_by(ChallengeRun.started_at.desc())
+        .first()
     )
-    .all()
-)
 
-    completed_days = len(checkins)
-    progress = round((completed_days / challenge.duration_days) * 100, 2)
+    if not current_run:
+        return {
+            "completed_days": 0,
+            "total_days": challenge.duration_days,
+            "progress": 0
+        }
 
-    return {
-    "completed_days": completed_days,
-    "total_days": challenge.duration_days,
-    "progress": progress
-}
+    checkins = (
+        db.query(CheckIn)
+        .filter(
+            CheckIn.user_id == user_id,
+            CheckIn.challenge_id == challenge_id,
+            CheckIn.run_id == current_run.id
+        )
+        .order_by(CheckIn.date.desc())
+        .all()
+    )
+
+    streak = 0
+    expected_date = date.today()
+
+    for checkin in checkins:
+        if checkin.date == expected_date:
+            streak += 1
+            expected_date -= timedelta(days=1)
+        elif checkin.date > expected_date:
+            continue
+        else:
+            break
+
+    completed_days = streak
+
+    progress = round(
+        (completed_days / challenge.duration_days) * 100,
+        2
+    )
+
+    return{
+        "completed_days": completed_days,
+        "total_days": challenge.duration_days,
+        "progress": progress
+    }
 
 @app.get("/completed/{user_id}/{challenge_id}")
 def check_completed(
-    user_id:int,
-    challenge_id:int,
+    user_id: int, 
+    challenge_id: int,
     db: Session = Depends(get_db)
 ):
+
     challenge = (
         db.query(Challenge)
         .filter(Challenge.id == challenge_id)
@@ -344,18 +381,33 @@ def check_completed(
     )
 
     if not challenge:
+        return{"completed": False}
+
+    current_run = (
+        db.query(ChallengeRun)
+        .filter(
+            ChallengeRun.user_id == user_id,
+            ChallengeRun.challenge_id == challenge_id,
+            ChallengeRun.completed_at == None
+        )
+        .order_by(ChallengeRun.started_at.desc())
+        .first()
+    )
+
+    if not current_run:
         return {"completed": False}
 
     checkins = (
         db.query(CheckIn)
         .filter(
-            CheckIn.user_id ==user_id,
-            CheckIn.challenge_id == challenge_id
+            CheckIn.user_id == user_id,
+            CheckIn.challenge_id == challenge_id,
+            CheckIn.run_id == current_run.id
         )
         .count()
     )
 
-    if checkins>=challenge.duration_days:
+    if checkins >= challenge. duration_days:
         return {"completed": True}
 
     return {"completed": False}
